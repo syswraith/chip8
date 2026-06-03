@@ -1,3 +1,5 @@
+#include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "../include/chip8.h"
@@ -25,8 +27,40 @@ uint8_t fontset[80] = {
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
-void chip8_init() {
+void chip_init() {
   memset(&chip, 0, sizeof(chip));
   chip.pc = 0x200;
   memcpy(&chip.memory[0x50], fontset, sizeof(fontset));
+}
+
+void dump_memory() {
+  printf("= Dumping memory\n");
+  for (int i = 0; i < 4096; i += 4) {
+    printf("%08X: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X "
+           "%02X %02X %02X %02X\n",
+           i, chip.memory[i], chip.memory[i + 1], chip.memory[i + 2],
+           chip.memory[i + 3], chip.memory[i + 4], chip.memory[i + 5],
+           chip.memory[i + 6], chip.memory[i + 7], chip.memory[i + 8],
+           chip.memory[i + 9], chip.memory[i + 10], chip.memory[i + 11],
+           chip.memory[i + 12], chip.memory[i + 13], chip.memory[i + 14],
+           chip.memory[i + 15]);
+  }
+}
+
+void dump_registers() {
+  printf("= Dumping registers\n");
+  for (int i = 0; i < 16; i++) {
+    printf("V[%02X]: %08X\n", i, chip.v[i]);
+  }
+  printf("Index: %08X\n", chip.index);
+  printf("PC: %02X\n", chip.pc);
+  printf("Sound: %02X\n", chip.sound);
+  printf("Delay: %02X\n", chip.delay);
+}
+
+void dump_stack() {
+  printf("= Dumping stack\n");
+  for (int i = 0; i < 256; i++) {
+    printf("%03X: %04X\n", i, chip.stack[i]);
+  }
 }

@@ -13,6 +13,11 @@ typedef struct {
   uint16_t stack[256];
 } Chip8;
 
-extern Chip8 chip8;
+extern Chip8 chip;
 
-void chip8_init();
+void chip_init();
+
+void dump_display();
+void dump_memory();
+void dump_registers();
+void dump_stack();
