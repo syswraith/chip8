@@ -35,15 +35,8 @@ void chip_init() {
 
 void dump_memory() {
   printf("= Dumping memory\n");
-  for (int i = 0; i < 4096; i += 4) {
-    printf("%08X: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X "
-           "%02X %02X %02X %02X\n",
-           i, chip.memory[i], chip.memory[i + 1], chip.memory[i + 2],
-           chip.memory[i + 3], chip.memory[i + 4], chip.memory[i + 5],
-           chip.memory[i + 6], chip.memory[i + 7], chip.memory[i + 8],
-           chip.memory[i + 9], chip.memory[i + 10], chip.memory[i + 11],
-           chip.memory[i + 12], chip.memory[i + 13], chip.memory[i + 14],
-           chip.memory[i + 15]);
+  for (int i = 0; i < 4096; i += 2) {
+    printf("%03X: %02X %02X\n", i, chip.memory[i], chip.memory[i + 1]);
   }
 }
 
