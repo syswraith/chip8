@@ -46,9 +46,11 @@ void dump_registers() {
     printf("V[%02X]: %08X\n", i, chip.v[i]);
   }
   printf("Index: %08X\n", chip.index);
-  printf("PC: %02X\n", chip.pc);
   printf("Sound: %02X\n", chip.sound);
   printf("Delay: %02X\n", chip.delay);
+
+  printf("PC: %02X\n", chip.pc);
+  printf("SP: %02X\n", chip.sp);
 }
 
 void dump_stack() {

@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#define size(x) ((sizeof(x)) / (sizeof(x[0])))
+
 typedef struct {
   uint8_t display[64][32];
   uint8_t memory[4096];
