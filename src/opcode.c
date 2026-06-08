@@ -57,12 +57,118 @@ void ret(const uint16_t *instruction) {
   chip.pc = pop();
 }
 
-Opcode opcode[] = {
-    // pls no separate
+void if_vx_ee_nn(const uint16_t *instruction) {
 
-    {0xf000, 0x1000, jump},
-    {0xf000, 0x2000, subroutine_call},
-    {0x00ff, 0x00ee, ret}};
+  uint16_t nn;
+  uint16_t x;
+  get_x(instruction, &x);
+  get_nn(instruction, &nn);
+
+  if (chip.v[x] == nn) {
+    chip.pc += 2;
+  }
+}
+
+void if_vx_ne_nn(const uint16_t *instruction) {
+
+  uint16_t nn;
+  uint16_t x;
+  get_x(instruction, &x);
+  get_nn(instruction, &nn);
+
+  if (chip.v[x] != nn) {
+    chip.pc += 2;
+  }
+}
+
+
+
+void if_vx_ee_vy(const uint16_t *instruction) {
+
+  uint16_t nn, x, y;
+  get_xy(instruction, &x, &y);
+  get_nn(instruction, &nn);
+
+  if (chip.v[x] == chip.v[y]) {
+    chip.pc += 2;
+  }
+}
+
+void vx_eq_nn(const uint16_t *instruction) {
+
+  uint16_t nn, x;
+  get_x(instruction, &x);
+  get_nn(instruction, &nn);
+
+  chip.v[x] = nn;
+}
+
+
+void vx_p_eq_nn(const uint16_t *instruction) {
+
+  uint16_t nn, x;
+  get_x(instruction, &x);
+  get_nn(instruction, &nn);
+
+  chip.v[x] += nn;
+}
+
+void vx_eq_vy(const uint16_t *instruction) {
+  uint16_t x, y;
+  get_xy(instruction, &x, &y);
+
+  chip.v[x] = chip.v[y];
+}
+
+void vx_p_eq_vy(const uint16_t *instruction) {
+  uint16_t x, y;
+  get_xy(instruction, &x, &y);
+
+  chip.v[x] += chip.v[y];
+}
+
+void vx_or_eq_vy(const uint16_t *instruction) {
+  uint16_t x, y;
+  get_xy(instruction, &x, &y);
+
+  chip.v[x] |= chip.v[y];
+}
+void vx_and_eq_vy(const uint16_t *instruction) {
+  uint16_t x, y;
+  get_xy(instruction, &x, &y);
+
+  chip.v[x] &= chip.v[y];
+}
+void vx_xor_eq_vy(const uint16_t *instruction) {
+  uint16_t x, y;
+  get_xy(instruction, &x, &y);
+
+  chip.v[x] ^= chip.v[y];
+}
+
+Opcode opcode[] = {
+  // pls no separate
+
+  {0xf000, 0x1000, jump},
+  {0xf000, 0x2000, subroutine_call},
+  {0x00ff, 0x00ee, ret},
+  {0xf000, 0x3000, if_vx_ee_nn},
+  {0xf000, 0x4000, if_vx_ne_nn}, 
+  {0xf000, 0x5000, if_vx_ee_vy},
+  {0xf000, 0x6000, vx_eq_nn},
+  {0xf000, 0x7000, vx_p_eq_nn},
+  {0xf00f, 0x8000, vx_eq_vy},
+  {0xf00f, 0x8001, vx_or_eq_vy},
+  {0xf00f, 0x8002, vx_and_eq_vy},
+  {0xf00f, 0x8003, vx_xor_eq_vy},
+//  {0xf00f, 0x8004, },
+//  {0xf00f, 0x8005, },
+//  {0xf00f, 0x8006, },
+//  {0xf00f, 0x8007, },
+//  {0xf00f, 0x800e, },
+
+  // pls no separate
+};
 
 void fetch(const uint16_t *instruction) {
   for (uint16_t index = 0; index < size(opcode); index++) {
