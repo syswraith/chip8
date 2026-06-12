@@ -5,6 +5,7 @@
 typedef struct {
   uint8_t display[64][32];
   uint8_t memory[4096];
+  uint8_t keypad[16];
   uint8_t v[16];
   uint8_t sound;
   uint8_t delay;
@@ -19,6 +20,7 @@ extern Chip8 chip;
 
 void chip_init();
 
+void dump_keypad();
 void dump_display();
 void dump_memory();
 void dump_registers();

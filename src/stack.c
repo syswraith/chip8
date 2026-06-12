@@ -8,6 +8,10 @@ void push(uint16_t element) {
 }
 
 uint16_t pop() {
+  if (chip.sp == 0) {
+    fprintf(stderr, "Stack underflow!\n");
+    return 0;
+  }
   uint16_t address = chip.stack[--chip.sp];
   printf("Popping %x from stack\n", address);
   return address;

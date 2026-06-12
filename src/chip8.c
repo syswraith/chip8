@@ -31,6 +31,16 @@ void chip_init() {
   memset(&chip, 0, sizeof(chip));
   chip.pc = 0x200;
   memcpy(&chip.memory[0x50], fontset, sizeof(fontset));
+  memset(&chip.keypad[0x0], 0, sizeof(chip.keypad));
+}
+
+void dump_keypad() {
+  printf("= Dumping keypad\n");
+
+  for (int i = 0; i < 16; i++)
+    printf("%02x: %d ", i, chip.keypad[i]);
+
+  printf("\n");
 }
 
 void dump_memory() {

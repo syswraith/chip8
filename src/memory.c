@@ -5,13 +5,10 @@
 
 void load_rom(const char *path) {
   FILE *file = fopen(path, "rb");
-
   if (file == NULL) {
     fprintf(stderr, "Error: Could not open file.\n");
     return;
   }
-
-  fread(chip.memory + 0x200, sizeof(char), sizeof(chip.memory), file);
-
+  fread(chip.memory + 0x200, sizeof(char), sizeof(chip.memory) - 0x200, file);
   fclose(file);
 }
