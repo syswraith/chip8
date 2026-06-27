@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "../include/chip8.h"
+#include "../include/opcode.h"
 
 // initialise the struct here
 Chip8 chip = {0};
@@ -67,5 +68,30 @@ void dump_stack() {
   printf("= Dumping stack\n");
   for (int i = 0; i < 256; i++) {
     printf("%03X: %04X\n", i, chip.stack[i]);
+  }
+}
+
+bool chip8_cycle(void) {
+  if (chip.pc >= 4094)
+    return false;
+
+  uint16_t instruction = (chip.memory[chip.pc] << 8) | chip.memory[chip.pc + 1];
+  chip.pc += 2;
+
+  if (!fetch_execute(&instruction)) {
+    // Unknown opcode — log but keep running
+    fprintf(stderr, "Unknown opcode: %04X at PC %03X\n", instruction,
+            chip.pc - 2);
+  }
+  return true; // Only return false on PC overflow
+}
+
+void chip8_update_timers(void) {
+  if (chip.delay > 0) {
+    chip.delay--;
+  }
+
+  if (chip.sound > 0) {
+    chip.sound--;
   }
 }

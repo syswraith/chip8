@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdint.h>
 
 #define size(x) ((sizeof(x)) / (sizeof(x[0])))
@@ -19,9 +20,10 @@ typedef struct {
 extern Chip8 chip;
 
 void chip_init();
+bool chip8_cycle(void);
+void chip8_update_timers(void);
 
 void dump_keypad();
-void dump_display();
 void dump_memory();
 void dump_registers();
 void dump_stack();

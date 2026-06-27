@@ -37,10 +37,16 @@ void vx_eq_rand_nn(const uint16_t *instruction);
 void if_vx_not_pressed(const uint16_t *instruction);
 void if_vx_pressed(const uint16_t *instruction);
 void vx_eq_delay(const uint16_t *instruction);
+void vx_eq_key(const uint16_t *instruction);
 void delay_eq_vx(const uint16_t *instruction);
 void sound_eq_vx(const uint16_t *instruction);
+void i_add_eq_vx(const uint16_t *instruction);
+void i_eq_font_vx(const uint16_t *instruction);
+void i_eq_bcd_vx(const uint16_t *instruction);
 void save_into_v0_to_vx(const uint16_t *instruction);
 void read_into_v0_to_vx(const uint16_t *instruction);
+void draw(const uint16_t *instruction);
 
 void fetch(const uint16_t *instruction);
 int decode_and_execute(const uint16_t *instruction, const uint16_t index);
+int fetch_execute(const uint16_t *instruction);

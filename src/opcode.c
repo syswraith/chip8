@@ -1,5 +1,6 @@
 #include "../include/opcode.h"
 #include "../include/chip8.h"
+#include "../include/display.h"
 #include "../include/stack.h"
 #include <assert.h>
 #include <stdint.h>
@@ -37,27 +38,18 @@ void get_xy(const uint16_t *instruction, uint8_t *x, uint8_t *y) {
 void jump(const uint16_t *instruction) {
   uint16_t nnn;
   get_nnn(instruction, &nnn);
-
-  printf("Executing jump\n");
-
   chip.pc = nnn;
 }
 
 void subroutine_call(const uint16_t *instruction) {
   uint16_t nnn;
   get_nnn(instruction, &nnn);
-
-  printf("Pushing onto stack and setting pc\n");
-
-  // main.c already advanced pc by 2 before calling fetch,
-  // so chip.pc now points to the instruction after the CALL.
   push(chip.pc);
   chip.pc = nnn;
 }
 
 void ret(const uint16_t *instruction) {
   (void)instruction;
-  printf("Returning to previous address\n");
   chip.pc = pop();
 }
 
@@ -223,20 +215,20 @@ void vx_eq_rand_nn(const uint16_t *instruction) {
   chip.v[x] = random_number & nn;
 }
 
-// FIX 2: EX9E — skip if key stored in V[x] IS pressed
+// EX9E — skip if key IS pressed
 void if_vx_not_pressed(const uint16_t *instruction) {
   uint8_t x;
   get_x(instruction, &x);
-  if (chip.keypad[chip.v[x]]) {
+  if (chip.keypad[chip.v[x]]) { // CHANGE: remove the !
     chip.pc += 2;
   }
 }
 
-// FIX 2: EXA1 — skip if key stored in V[x] is NOT pressed
+// EXA1 — skip if key is NOT pressed
 void if_vx_pressed(const uint16_t *instruction) {
   uint8_t x;
   get_x(instruction, &x);
-  if (!chip.keypad[chip.v[x]]) {
+  if (!chip.keypad[chip.v[x]]) { // CHANGE: add the !
     chip.pc += 2;
   }
 }
@@ -246,6 +238,20 @@ void vx_eq_delay(const uint16_t *instruction) {
   get_x(instruction, &x);
 
   chip.v[x] = chip.delay;
+}
+
+void vx_eq_key(const uint16_t *instruction) {
+  uint8_t x;
+  get_x(instruction, &x);
+
+  for (uint8_t key = 0; key < 16; key++) {
+    if (chip.keypad[key]) {
+      chip.v[x] = key;
+      return;
+    }
+  }
+
+  chip.pc -= 2;
 }
 
 void delay_eq_vx(const uint16_t *instruction) {
@@ -262,10 +268,17 @@ void sound_eq_vx(const uint16_t *instruction) {
   chip.sound = chip.v[x];
 }
 
-// FIX 3: Added clear screen handler
 void clear_screen(const uint16_t *instruction) {
   (void)instruction;
-  memset(chip.display, 0, sizeof(chip.display));
+  clear_display();
+}
+
+void draw(const uint16_t *instruction) {
+  uint8_t x, y, n;
+  get_xy(instruction, &x, &y);
+  get_n(instruction, &n);
+
+  chip.v[0xF] = draw_sprite(chip.v[x], chip.v[y], n);
 }
 
 // FIX 3: Added FX1E handler
@@ -273,6 +286,22 @@ void i_add_eq_vx(const uint16_t *instruction) {
   uint8_t x;
   get_x(instruction, &x);
   chip.index += chip.v[x];
+}
+
+void i_eq_font_vx(const uint16_t *instruction) {
+  uint8_t x;
+  get_x(instruction, &x);
+  chip.index = 0x50 + (chip.v[x] & 0x0F) * 5;
+}
+
+void i_eq_bcd_vx(const uint16_t *instruction) {
+  uint8_t x;
+  get_x(instruction, &x);
+  uint16_t value = chip.v[x];
+
+  chip.memory[chip.index] = (value / 100) % 10;
+  chip.memory[chip.index + 1] = (value / 10) % 10;
+  chip.memory[chip.index + 2] = value % 10;
 }
 
 void save_into_v0_to_vx(const uint16_t *instruction) {
@@ -322,14 +351,17 @@ Opcode opcode[] = {
     {0xf000, 0xA000, i_eq_nnn},
     {0xf000, 0xB000, jump_nnn},
     {0xf000, 0xC000, vx_eq_rand_nn},
+    {0xf000, 0xD000, draw},
     {0xf0ff, 0xE09E, if_vx_not_pressed},
     {0xf0ff, 0xE0A1, if_vx_pressed},
 
     {0xf0ff, 0xF007, vx_eq_delay},
-    //    {0xf0ff, 0xF00A, vx_eq_key},
+    {0xf0ff, 0xF00A, vx_eq_key},
     {0xf0ff, 0xF015, delay_eq_vx},
     {0xf0ff, 0xF018, sound_eq_vx},
-    {0xf0ff, 0xF01E, i_add_eq_vx}, // FIX 3: FX1E index add
+    {0xf0ff, 0xF01E, i_add_eq_vx},
+    {0xf0ff, 0xF029, i_eq_font_vx},
+    {0xf0ff, 0xF033, i_eq_bcd_vx},
     {0xf0ff, 0xF055, save_into_v0_to_vx},
     {0xf0ff, 0xF065, read_into_v0_to_vx},
 
@@ -338,19 +370,25 @@ Opcode opcode[] = {
 
 int decode_and_execute(const uint16_t *instruction, const uint16_t index) {
   if ((*instruction & opcode[index].mask) == opcode[index].pattern) {
-    printf("Matched with pattern: %02X\n", opcode[index].pattern);
     opcode[index].handler(instruction);
-    return 1; // Return 1 meaning "Match found and handled!"
+    return 1;
   }
-  return 0; // No match
+  return 0;
 }
 
-// 2. Update your fetch loop to break instantly on a match
-void fetch(const uint16_t *instruction) {
+int fetch_execute(const uint16_t *instruction) {
   uint16_t num_opcodes = sizeof(opcode) / sizeof(opcode[0]);
   for (uint16_t index = 0; index < num_opcodes; index++) {
     if (decode_and_execute(instruction, index)) {
-      break;
+      return 1;
     }
+  }
+  return 0;
+}
+
+void fetch(const uint16_t *instruction) {
+  if (!fetch_execute(instruction)) {
+    fprintf(stderr, "Unknown opcode: %04X at PC %03X\n", *instruction,
+            chip.pc - 2);
   }
 }
