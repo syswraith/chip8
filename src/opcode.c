@@ -7,6 +7,37 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <raylib.h>
+
+void video_next_frame(const uint16_t *instruction)
+{
+    (void)instruction;
+
+    static double last_frame = 0.0;
+    double now = GetTime();
+
+    // 30 FPS
+    if (now - last_frame < (1.0 / 90.0))
+        return;
+
+    last_frame = now;
+
+    if (chip.video == NULL)
+        return;
+
+    if (fread(chip.display,
+              sizeof(chip.display),
+              1,
+              chip.video) != 1)
+    {
+        rewind(chip.video);
+
+        fread(chip.display,
+              sizeof(chip.display),
+              1,
+              chip.video);
+    }
+}
 
 void get_n(const uint16_t *instruction, uint8_t *n) {
   assert(n);
@@ -364,6 +395,7 @@ Opcode opcode[] = {
     {0xf0ff, 0xF033, i_eq_bcd_vx},
     {0xf0ff, 0xF055, save_into_v0_to_vx},
     {0xf0ff, 0xF065, read_into_v0_to_vx},
+    {0xf0ff, 0xF0F0, video_next_frame}
 
     // pls no separate
 };

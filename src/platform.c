@@ -1,13 +1,13 @@
-#include "../include/chip8.h"
 #include "../include/platform.h"
+#include "../include/chip8.h"
 #include <math.h>
 #include <raylib.h>
 #include <stdlib.h>
 #include <string.h>
 
 static const int key_map[16] = {
-    KEY_X, KEY_ONE, KEY_TWO, KEY_THREE, KEY_Q, KEY_W, KEY_E, KEY_A,
-    KEY_S, KEY_D, KEY_Z, KEY_C, KEY_FOUR, KEY_R, KEY_F, KEY_V,
+    KEY_X, KEY_ONE, KEY_TWO, KEY_THREE, KEY_Q,    KEY_W, KEY_E, KEY_A,
+    KEY_S, KEY_D,   KEY_Z,   KEY_C,     KEY_FOUR, KEY_R, KEY_F, KEY_V,
 };
 
 static Sound beep_sound;
@@ -54,9 +54,7 @@ void platform_shutdown(void) {
   CloseWindow();
 }
 
-bool platform_should_close(void) {
-  return WindowShouldClose();
-}
+bool platform_should_close(void) { return WindowShouldClose(); }
 
 void platform_poll_input(void) {
   memset(chip.keypad, 0, sizeof(chip.keypad));
@@ -70,12 +68,13 @@ void platform_poll_input(void) {
 
 void platform_render(int scale) {
   BeginDrawing();
-  ClearBackground(BLACK);
+  ClearBackground((Color){40, 40, 40, 255}); // #282828 gruvbox dark bg
 
   for (int y = 0; y < 32; y++) {
     for (int x = 0; x < 64; x++) {
       if (chip.display[x][y]) {
-        DrawRectangle(x * scale, y * scale, scale, scale, RAYWHITE);
+        DrawRectangle(x * scale, y * scale, scale, scale,
+                      (Color){213, 196, 161, 255}); // #D5C4A1
       }
     }
   }

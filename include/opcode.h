@@ -13,6 +13,8 @@ void get_nnn(const uint16_t *instruction, uint16_t *nnn);
 void get_x(const uint16_t *instruction, uint8_t *x);
 void get_xy(const uint16_t *instruction, uint8_t *x, uint8_t *y);
 
+void video_next_frame(const uint16_t *instruction);
+
 void ret(const uint16_t *instruction);
 void jump(const uint16_t *instruction);
 void subroutine_call(const uint16_t *instruction);

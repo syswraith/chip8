@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define size(x) ((sizeof(x)) / (sizeof(x[0])))
 
@@ -11,6 +12,7 @@ typedef struct {
   uint8_t sound;
   uint8_t delay;
   uint8_t sp;
+  FILE *video;
 
   uint16_t pc;
   uint16_t index;
