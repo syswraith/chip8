@@ -1,4 +1,4 @@
-!# CHIP-8 Project Layout
+# CHIP-8 Project Layout
 
 ```text
 chip8/
