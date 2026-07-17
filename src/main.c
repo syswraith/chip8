@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 #define CLOCK_SPEED 500
-#define TARGET_FPS 60
+#define TARGET_FPS 30
 
 int main(int argc, char **argv) {
   if (argc < 2) {
